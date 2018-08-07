@@ -45,7 +45,7 @@ namespace MarkdownWikiGenerator
                 sb.Append("#");
             }
             sb.Append(" ");
-            CodeQuote(code);
+            sb.Append(code);
             sb.AppendLine();
         }
 

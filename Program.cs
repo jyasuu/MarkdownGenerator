@@ -14,7 +14,7 @@ namespace MarkdownWikiGenerator
         static void Main(string[] args)
         {
             // put dll & xml on same diretory.
-            var target = "UniRx.dll"; // :)
+            string target="";
             string dest = "md";
             string namespaceMatch = string.Empty;
             if (args.Length == 1)
@@ -42,20 +42,22 @@ namespace MarkdownWikiGenerator
 
             foreach (var g in types.GroupBy(x => x.Namespace).OrderBy(x => x.Key))
             {
-                if (!Directory.Exists(dest)) Directory.CreateDirectory(dest);
+                var namescapeDirectoryPath = Path.Combine(dest, g.Key.Replace('.','\\'));
+                if (!Directory.Exists(namescapeDirectoryPath)) Directory.CreateDirectory(namescapeDirectoryPath);
 
                 homeBuilder.HeaderWithLink(2, g.Key, g.Key);
                 homeBuilder.AppendLine();
 
-                var sb = new StringBuilder();
                 foreach (var item in g.OrderBy(x => x.Name))
                 {
-                    homeBuilder.ListLink(MarkdownBuilder.MarkdownCodeQuote(item.BeautifyName), g.Key + "#" + item.BeautifyName.Replace("<", "").Replace(">", "").Replace(",", "").Replace(" ", "-").ToLower());
+                    var sb = new StringBuilder();
+                    homeBuilder.ListLink(MarkdownBuilder.MarkdownCodeQuote(item.BeautifyName), Path.Combine(g.Key.Replace('.', '\\'), item.Name + ".md"));
 
                     sb.Append(item.ToString());
+                    File.WriteAllText(Path.Combine(namescapeDirectoryPath, item.Name + ".md"), sb.ToString());
+                    item.GenerateMethodDocuments(namescapeDirectoryPath);
                 }
 
-                File.WriteAllText(Path.Combine(dest, g.Key + ".md"), sb.ToString());
                 homeBuilder.AppendLine();
             }
 
