@@ -18,11 +18,18 @@ namespace MarkdownWikiGenerator
         public string Namespace => type.Namespace;
         public string Name => type.Name;
         public string BeautifyName => Beautifier.BeautifyTypeWithLink(type,GenerateTypeRelativeLinkPath);
+        public string FullName => type.FullName;
 
         public MarkdownableType(Type type, ILookup<string, XmlDocumentComment> commentLookup)
         {
             this.type = type;
             this.commentLookup = commentLookup;
+        }
+
+        public Type[] GetNestedTypes()
+        {
+            return type.GetNestedTypes(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.InvokeMethod)
+                .ToArray();
         }
 
         MethodInfo[] GetMethods()
@@ -222,7 +229,7 @@ namespace MarkdownWikiGenerator
                 return string.Empty;
             var localNamescape = this.Namespace;
             var linkNamescape = type.Namespace;
-            var RelativeLinkPath = $"{(string.Join("/", localNamescape.Split('.').Select(a => "..")))}/{linkNamescape.Replace('.', '/')}/{type.Name}.md";
+            var RelativeLinkPath = $"{(string.Join("/", localNamescape.Split('.').Select(a => "..")))}/{type.FullName?.Replace('.', '/')}.md";
             return RelativeLinkPath;
         }
 
@@ -236,7 +243,10 @@ namespace MarkdownWikiGenerator
                 var sb = new StringBuilder();
 
                 string generateTypeRelativeLinkPath(Type type){
-                    var RelativeLinkPath = $"{(string.Join("/", this.Namespace.Split('.').Select(a => "..")))}/../{type.Namespace.Replace('.', '/')}/{type.Name}.md";
+                    var RelativeLinkPath = 
+                        $"{(string.Join("/", this.Namespace.Split('.').Select(a => "..")))}/../{type.FullName?.Replace('.', '/')}.md";
+                    if(type.FullName?.Contains("+") ?? false)
+                        return RelativeLinkPath;
                     return RelativeLinkPath;
                 }
                 var isExtension = method.GetCustomAttributes<System.Runtime.CompilerServices.ExtensionAttribute>(false).Any();
@@ -313,11 +323,25 @@ namespace MarkdownWikiGenerator
             var namespaceRegex = 
                 !string.IsNullOrEmpty(namespaceMatch) ? new Regex(namespaceMatch) : null;
 
+
+            IEnumerable<Type> TypesSelector(Type type)
+            {
+                var types = type.GetNestedTypes();
+                var typeList = new List<Type>
+                {
+                    type
+                };
+                if (types.Length == 0)
+                    return typeList;
+                typeList.AddRange(types.SelectMany(TypesSelector).ToArray());
+                return typeList;
+            }
+
             IEnumerable< Type> AssemblyTypesSelector(Assembly x) {
 
                 try
                 {
-                    var types = x.GetTypes(); ;
+                    var types = x.GetTypes().SelectMany(TypesSelector);
                     return types;
                 }
                 catch (ReflectionTypeLoadException ex)
@@ -349,7 +373,7 @@ namespace MarkdownWikiGenerator
 
             bool OthersPredicate(Type x)
             {
-                var IsPublic = x.IsPublic;
+                var IsPublic = x.IsPublic || (x.IsNested && x.IsNestedPublic);
                 var IsAssignableFromDelegate = typeof(Delegate).IsAssignableFrom(x);
                 var HaveObsoleteAttribute = x.GetCustomAttributes<ObsoleteAttribute>().Any();
                 return IsPublic && !IsAssignableFromDelegate && !HaveObsoleteAttribute;

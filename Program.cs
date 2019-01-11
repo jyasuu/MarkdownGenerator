@@ -43,7 +43,8 @@ namespace MarkdownWikiGenerator
             foreach (var g in types.GroupBy(x => x.Namespace).OrderBy(x => x.Key))
             {
                 var namescapeDirectoryPath = Path.Combine(dest, g.Key.Replace('.','\\'));
-                if (!Directory.Exists(namescapeDirectoryPath)) Directory.CreateDirectory(namescapeDirectoryPath);
+                if (!Directory.Exists(namescapeDirectoryPath))
+                    Directory.CreateDirectory(namescapeDirectoryPath);
 
                 homeBuilder.HeaderWithLink(2, g.Key, g.Key);
                 homeBuilder.AppendLine();
@@ -52,9 +53,11 @@ namespace MarkdownWikiGenerator
                 {
                     var sb = new StringBuilder();
                     homeBuilder.ListLink(MarkdownBuilder.MarkdownCodeQuote(item.BeautifyName), Path.Combine(g.Key.Replace('.', '\\'), item.Name + ".md"));
-
+                    
                     sb.Append(item.ToString());
-                    File.WriteAllText(Path.Combine(namescapeDirectoryPath, item.Name + ".md"), sb.ToString());
+                    var fileName = item.FullName.Replace(g.Key, "").TrimStart('.');
+                    var fullFileName = Path.Combine(namescapeDirectoryPath, fileName) + ".md";
+                    File.WriteAllText(fullFileName, sb.ToString());
                     item.GenerateMethodDocuments(namescapeDirectoryPath);
                 }
 
