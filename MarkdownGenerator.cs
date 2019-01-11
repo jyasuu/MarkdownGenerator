@@ -32,6 +32,13 @@ namespace MarkdownWikiGenerator
                 .ToArray();
         }
 
+        ConstructorInfo[] GetConstructors()
+        {
+            return type.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.InvokeMethod)
+                .ToArray();
+
+        }
+
         MethodInfo[] GetMethods()
         {
             return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly | BindingFlags.InvokeMethod)
@@ -209,6 +216,7 @@ namespace MarkdownWikiGenerator
                 BuildTable(mb, "Fields", GetFields(), commentLookup[type.FullName], x => Beautifier.BeautifyTypeWithLink(x.FieldType, GenerateTypeRelativeLinkPath), x => x.Name, x => x.Name);
                 BuildTable(mb, "Properties", GetProperties(), commentLookup[type.FullName], x => Beautifier.BeautifyTypeWithLink(x.PropertyType, GenerateTypeRelativeLinkPath), x => x.Name, x => x.Name);
                 BuildTable(mb, "Events", GetEvents(), commentLookup[type.FullName], x => Beautifier.BeautifyTypeWithLink(x.EventHandlerType, GenerateTypeRelativeLinkPath), x => x.Name, x => x.Name);
+                BuildTable(mb, "Constructors", GetConstructors(), commentLookup[type.FullName], x => "void", x => x.Name, x => Beautifier.ToMarkdownConstructorInfo(x, GenerateTypeRelativeLinkPath));
                 BuildTable(mb, "Methods", GetMethods(), commentLookup[type.FullName], x => Beautifier.BeautifyTypeWithLink(x.ReturnType, GenerateTypeRelativeLinkPath) , x => x.Name, x => Beautifier.ToMarkdownMethodInfo(x, GenerateTypeRelativeLinkPath));
                 BuildTable(mb, "Static Fields", GetStaticFields(), commentLookup[type.FullName], x => Beautifier.BeautifyTypeWithLink(x.FieldType, GenerateTypeRelativeLinkPath), x => x.Name, x => x.Name);
                 BuildTable(mb, "Static Properties", GetStaticProperties(), commentLookup[type.FullName], x => Beautifier.BeautifyTypeWithLink(x.PropertyType, GenerateTypeRelativeLinkPath), x => x.Name, x => x.Name);

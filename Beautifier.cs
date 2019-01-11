@@ -57,5 +57,18 @@ namespace MarkdownWikiGenerator
 
             return $"[{methodInfo.Name}]({methodInfo.DeclaringType.Name}/{methodInfo.MetadataToken}.md)" + "(" + (isExtension ? "this " : "") + string.Join(", ", seq) + ")";
         }
+
+        internal static string ToMarkdownConstructorInfo(ConstructorInfo constructorInfo, Func<Type, string> generateTypeRelativeLinkPath)
+        {
+            var isExtension = constructorInfo.GetCustomAttributes<System.Runtime.CompilerServices.ExtensionAttribute>(false).Any();
+
+            var seq = constructorInfo.GetParameters().Select(x =>
+            {
+                var suffix = x.HasDefaultValue ? (" = " + (x.DefaultValue ?? $"null")) : "";
+                return $"{BeautifyTypeWithLink(x.ParameterType, generateTypeRelativeLinkPath)} " + x.Name + suffix;
+            });
+
+            return $"[{constructorInfo.Name}]({constructorInfo.DeclaringType.Name}/{constructorInfo.MetadataToken}.md)" + "(" + (isExtension ? "this " : "") + string.Join(", ", seq) + ")";
+        }
     }
 }
