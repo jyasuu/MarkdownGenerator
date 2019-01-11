@@ -145,9 +145,9 @@ namespace MarkdownWikiGenerator
                     || x.MemberName.StartsWith(name(item2) + "`"))?.Summary ?? "";
                     return new[] {
                         //MarkdownBuilder.MarkdownCodeQuote(),
-                        type(item2),
-                        finalName(item2),
-                        summary };
+                        type(item2).Replace("|",@"\|"),
+                        finalName(item2).Replace("|",@"\|"),
+                        summary.Replace("|",@"\|") };
                 });
 
                 mb.Table(head, data);
