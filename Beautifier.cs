@@ -68,7 +68,7 @@ namespace MarkdownWikiGenerator
                 return $"{BeautifyTypeWithLink(x.ParameterType, generateTypeRelativeLinkPath)} " + x.Name + suffix;
             });
 
-            return $"[{constructorInfo.Name}]({constructorInfo.DeclaringType.Name}/{constructorInfo.MetadataToken}.md)" + "(" + (isExtension ? "this " : "") + string.Join(", ", seq) + ")";
+            return $"{constructorInfo.Name}" + "(" + (isExtension ? "this " : "") + string.Join(", ", seq) + ")";
         }
     }
 }
