@@ -1,4 +1,7 @@
 MarkdownGenerator
+
+[![Coverage Status](https://coveralls.io/repos/github/jyasuu/MarkdownGenerator/badge.svg?branch=master)](https://coveralls.io/github/jyasuu/MarkdownGenerator?branch=master)
+
 ===
 Generate markdown from C# binary & xml document for GitHub Wiki.
 
